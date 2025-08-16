@@ -1,15 +1,27 @@
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+}
+
 resource "aws_instance" "docker" {
   ami           = local.ami_id
-  #instance_type = "t3.micro"
-  vpc_security_group_ids = [aws_security_group.allow_all_docker.id]
   instance_type = "t3.medium"
-  # need more for terraform
+  subnet_id     = aws_subnet.main.id   # 👈 attach to subnet created by Terraform
+  vpc_security_group_ids = [aws_security_group.allow_all_docker.id]
+   associate_public_ip_address = true 
+
   root_block_device {
     volume_size = 50
-    volume_type = "gp3" # or "gp2", depending on your preference
+    volume_type = "gp3"
   }
+
   user_data = file("docker.sh")
-  #iam_instance_profile = "TerraformAdmin"
+
   tags = {
      Name = "${var.project}-${var.environment}-docker"
   }
@@ -18,6 +30,7 @@ resource "aws_instance" "docker" {
 resource "aws_security_group" "allow_all_docker" {
     name        = "allow_all_docker"
     description = "allow all traffic"
+    vpc_id      = aws_vpc.main.id
 
     ingress {
         from_port        = 0
