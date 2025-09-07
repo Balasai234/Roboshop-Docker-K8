@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: roboshop
+  # deployment labels
+  labels:
+    component: frontend
+    project: roboshop
+    tier: web
+spec:
+  replicas: 1
+  # These are the labels replica set use to create pod replicas, this should match pod labels
+  selector:
+    matchLabels:
+      component: frontend
+      project: roboshop
+      tier: web
+  # This is pod definition
+  template:
+    metadata:
+      labels:
+        component: frontend
+        project: roboshop
+        tier: web
+    spec:
+      containers:
+      - name: frontend
+        image: joindevops/frontend:v1
